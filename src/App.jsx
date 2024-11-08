@@ -7,7 +7,7 @@ import { Grid2, Stack } from "@mui/material";
 
 const App = () => {
   return (
-    <Stack spacing={2} className="center-root" sx={{ paddingX: "100px" }}>
+    <Stack spacing={2} className="center-root" sx={{ paddingX: "5%" }}>
       <Grid2
         xs={12}
         style={{
