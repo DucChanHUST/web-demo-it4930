@@ -25,8 +25,8 @@ const PieChartCard = ({ nameChart }) => {
     sky[500],
     teal[500],
     rose[500],
-    blue[500],
     yellow[500],
+    blue[500],
     fuchsia[500],
     emerald[500],
   ];

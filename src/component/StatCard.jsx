@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
+import { useData } from "../Context";
 import { areaElementClasses } from "@mui/x-charts/LineChart";
 import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
 import {
@@ -12,20 +13,59 @@ import {
   CardContent,
 } from "@mui/material";
 
-const StatCard = ({ title, changePercen, value }) => {
+const StatCard = ({ columnName, chartColor, hiThre, meThre }) => {
   const theme = useTheme();
+  const { data, currentData } = useData();
 
-  const daysInWeek = getDaysInMonth(4, 2024);
-  const data = daysInWeek.map(() => Math.floor(Math.random() * 100));
+  const [value, setValue] = useState(0);
+  const [last50Data, setLast50Data] = useState([]);
+  const [chipValue, setChipValue] = useState({});
 
-  const chipBgColor =
-    changePercen > 0 ? theme.palette.success.light : theme.palette.error.light;
-  const chipTextColor =
-    changePercen > 0 ? theme.palette.success.dark : theme.palette.error.dark;
-  const chipBorderColor =
-    changePercen > 0 ? theme.palette.success.main : theme.palette.error.main;
-  const chartColor =
-    changePercen > 0 ? theme.palette.success.main : theme.palette.error.main;
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+
+    setLast50Data(data.map((row) => row[columnName]).slice(-50));
+  }, [data, columnName]);
+
+  useEffect(() => {
+    if (!currentData) {
+      return;
+    }
+    const curretValue = currentData[columnName];
+
+    setLast50Data((prev) => {
+      return [...prev.slice(1), curretValue];
+    });
+    setValue(curretValue);
+
+    if (curretValue > hiThre) {
+      setChipValue({
+        bgColor: theme.palette.error.light,
+        textColor: theme.palette.error.dark,
+        borderColor: theme.palette.error.main,
+        level: "high",
+      });
+    } else if (curretValue > meThre) {
+      setChipValue({
+        bgColor: theme.palette.warning.light,
+        textColor: theme.palette.warning.dark,
+        borderColor: theme.palette.warning.main,
+        level: "medium",
+      });
+    } else {
+      setChipValue({
+        bgColor: theme.palette.success.light,
+        textColor: theme.palette.success.dark,
+        borderColor: theme.palette.success.main,
+        level: "low",
+      });
+    }
+  }, [data, currentData, columnName, theme, hiThre, meThre]);
+
+  const title = columnName;
+  const randomId = Math.floor(Math.random() * 1000);
 
   return (
     <Card variant="outlined" sx={{ height: "100%", flexGrow: 1 }}>
@@ -42,42 +82,42 @@ const StatCard = ({ title, changePercen, value }) => {
               <Typography variant="h2">{value}</Typography>
               <Chip
                 sx={{
-                  color: chipTextColor,
-                  bgcolor: chipBgColor,
-                  borderColor: chipBorderColor,
+                  color: chipValue.textColor,
+                  bgcolor: chipValue.bgColor,
+                  borderColor: chipValue.borderColor,
                   fontWeight: "bold",
                 }}
                 variant="outlined"
-                label={`${changePercen}%`}
+                label={`${chipValue.level}`}
               />
             </Stack>
             <Typography
               variant="subtitle2"
               sx={{ paddingTop: "4px", color: "text.secondary" }}
             >
-              Last 30 day
+              Last 50 Pakages
             </Typography>
           </Stack>
-          <Box sx={{ width: "100%", height: 70 }}>
+          <Box sx={{ width: "100%", height: 100 }}>
             <SparkLineChart
               colors={[chartColor]}
-              data={data}
+              data={last50Data}
               area
               showHighlight
               showTooltip
               xAxis={{
                 scaleType: "band",
-                data: daysInWeek,
+                visible: false,
               }}
               sx={{
                 [`& .${areaElementClasses.root}`]: {
-                  fill: `url(#area-gradient-${value}${data[0]})`,
+                  fill: `url(#area-gradient-${randomId})`,
                 },
               }}
             >
               <AreaGradient
                 color={chartColor}
-                id={`area-gradient-${value}${data[0]}`}
+                id={`area-gradient-${randomId}`}
               />
             </SparkLineChart>
           </Box>
@@ -89,27 +129,12 @@ const StatCard = ({ title, changePercen, value }) => {
 
 export default StatCard;
 
-const getDaysInMonth = (month, year) => {
-  const date = new Date(year, month, 0);
-  const monthName = date.toLocaleDateString("en-US", {
-    month: "short",
-  });
-  const daysInMonth = date.getDate();
-  const days = [];
-  let i = 1;
-  while (days.length < daysInMonth) {
-    days.push(`${monthName} ${i}`);
-    i += 1;
-  }
-  return days;
-};
-
 const AreaGradient = ({ color, id }) => {
   return (
     <defs>
       <linearGradient id={id} x1="50%" y1="0%" x2="50%" y2="100%">
-        <stop offset="0%" stopColor={color} stopOpacity={0.3} />
-        <stop offset="100%" stopColor={color} stopOpacity={0} />
+        <stop offset="0%" stopColor={color} stopOpacity={0.7} />
+        <stop offset="100%" stopColor={color} stopOpacity={0.0} />
       </linearGradient>
     </defs>
   );
