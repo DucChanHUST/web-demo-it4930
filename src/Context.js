@@ -6,6 +6,7 @@ const DataContext = createContext();
 export const DataProvider = ({ children }) => {
   const initIndex = 1000;
   const [data, setData] = useState([]);
+  const [allData, setAllData] = useState([]);
   const [currentData, setCurrentData] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(initIndex);
 
@@ -15,6 +16,7 @@ export const DataProvider = ({ children }) => {
       header: true,
       complete: (result) => {
         setData(result.data.slice(0, initIndex));
+        setAllData(result.data);
       },
     });
   }, []);
@@ -23,15 +25,15 @@ export const DataProvider = ({ children }) => {
     if (data.length === 0) return;
 
     const interval = setInterval(() => {
-      setCurrentData(data[currentIndex]);
-      setCurrentIndex((prev) => (prev + 1) % data.length);
+      setCurrentData(allData[currentIndex]);
+      setCurrentIndex((prev) => prev + 1);
     }, 1500);
 
     return () => clearInterval(interval);
   }, [data, currentIndex]);
 
   return (
-    <DataContext.Provider value={{ data, currentData }}>
+    <DataContext.Provider value={{ data, currentData, currentIndex }}>
       {children}
     </DataContext.Provider>
   );
