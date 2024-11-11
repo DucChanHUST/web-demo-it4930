@@ -4,7 +4,7 @@ import Papa from "papaparse";
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
-  const initIndex = 1000;
+  const initIndex = 2705;
   const [data, setData] = useState([]);
   const [allData, setAllData] = useState([]);
   const [currentData, setCurrentData] = useState([]);
@@ -30,7 +30,7 @@ export const DataProvider = ({ children }) => {
     }, 1500);
 
     return () => clearInterval(interval);
-  }, [data, currentIndex]);
+  }, [data, currentIndex, allData]);
 
   return (
     <DataContext.Provider value={{ data, currentData, currentIndex }}>
