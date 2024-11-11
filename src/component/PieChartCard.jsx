@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useData } from "../Context";
 import { styled } from "@mui/material/styles";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { useDrawingArea } from "@mui/x-charts/hooks";
-import { sky, teal, rose, fuchsia, emerald, yellow, blue } from "../theme";
+import {
+  sky,
+  teal,
+  rose,
+  fuchsia,
+  emerald,
+  yellow,
+  blue,
+  gray,
+  pink,
+} from "../theme";
 import {
   Box,
   Card,
@@ -13,29 +24,83 @@ import {
   linearProgressClasses,
 } from "@mui/material";
 
-const PieChartCard = ({ nameChart }) => {
-  const data = [
-    { label: "Port 22", value: 5300 },
-    { label: "Port 24", value: 3040 },
-    { label: "Port 25", value: 1020 },
-    { label: "other", value: 100 },
-  ];
+const PieChartCard = ({ nameChart, columnName, ignoreValue = [], top = 5 }) => {
+  const { data, currentData } = useData();
 
-  const colors = [
-    sky[500],
-    teal[500],
-    rose[500],
-    yellow[500],
-    blue[500],
-    fuchsia[500],
-    emerald[500],
-  ];
-  const dataChart = data.map((item, index) => ({
-    ...item,
-    color: colors[index],
-  }));
+  const [, setLabels] = useState();
+  const [total, setTotal] = useState(0);
+  const [, setDataRaw] = useState([]);
+  const [dataChart, setDataChart] = useState([]);
 
-  const total = data.reduce((acc, cur) => acc + cur.value, 0);
+  // Pre calculate
+  useEffect(() => {
+    if (!data.length) return;
+
+    const newLabels = new Set();
+    data.forEach((row) => {
+      if (!ignoreValue.includes(row[columnName])) {
+        newLabels.add(row[columnName]);
+      }
+    });
+    setLabels(newLabels);
+
+    const initialDataRaw = Array.from(newLabels).map((item) => ({
+      label: item,
+      value: data.filter((row) => row[columnName] === item).length,
+    }));
+
+    setDataRaw(initialDataRaw);
+    const initialTotal = initialDataRaw.reduce(
+      (acc, item) => acc + item.value,
+      0
+    );
+    setTotal(initialTotal);
+  }, [data, columnName, ignoreValue]);
+
+  useEffect(() => {
+    if (!currentData) return;
+
+    setDataRaw((prevDataRaw) => {
+      const dataMap = new Map(prevDataRaw.map((d) => [d.label, d.value]));
+
+      if (!ignoreValue.includes(currentData[columnName])) {
+        if (dataMap.has(currentData[columnName])) {
+          dataMap.set(
+            currentData[columnName],
+            dataMap.get(currentData[columnName]) + 1
+          );
+        } else {
+          dataMap.set(currentData[columnName], 1);
+        }
+
+        setTotal((prevTotal) => prevTotal + 1);
+      }
+
+      const updatedDataRaw = Array.from(dataMap, ([label, value]) => ({
+        label,
+        value,
+      }));
+
+      // Sort and select top N, group the rest as "other"
+      const sortedData = updatedDataRaw.sort((a, b) => b.value - a.value);
+      const topN = sortedData.slice(0, top);
+      const otherValue = sortedData
+        .slice(top)
+        .reduce((acc, item) => acc + item.value, 0);
+
+      // Update colors
+      const finalDataChart = [
+        ...topN,
+        { label: "other", value: otherValue },
+      ].map((item, index) => ({
+        ...item,
+        color: colors[index % colors.length],
+      }));
+
+      setDataChart(finalDataChart);
+      return updatedDataRaw;
+    });
+  }, [currentData, columnName, ignoreValue]);
 
   return (
     <Card variant="outlined" sx={{ height: "100%", flexGrow: 1 }}>
@@ -70,7 +135,7 @@ const PieChartCard = ({ nameChart }) => {
                 {item.label}
               </Typography>
               <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                {Math.floor((item.value / total) * 100)}%
+                {((item.value / total) * 100).toFixed(2)}%
               </Typography>
             </Stack>
             <LinearProgress
@@ -146,3 +211,15 @@ const StyledText = styled("text", {
     },
   ],
 }));
+
+const colors = [
+  sky[500],
+  teal[500],
+  rose[500],
+  yellow[500],
+  blue[500],
+  fuchsia[500],
+  emerald[500],
+  gray[500],
+  pink[500],
+];

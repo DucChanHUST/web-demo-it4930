@@ -1,7 +1,7 @@
 import React from "react";
 
-import { StatCard, PieChartCard } from "../component";
 import { Grid2 } from "@mui/material";
+import { PieChartCard } from "../component";
 
 const Mid = () => {
   return (
@@ -10,7 +10,12 @@ const Mid = () => {
         hehe
       </Grid2>
       <Grid2 size={4} className="center-root">
-        <PieChartCard nameChart={"hix"} />
+        <PieChartCard
+          nameChart={"Attack Type"}
+          columnName={"Label"}
+          ignoreValue={["Benign"]}
+          top={7}
+        />
       </Grid2>
     </Grid2>
   );
