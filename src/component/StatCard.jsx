@@ -26,28 +26,36 @@ const StatCard = ({ columnName, chartColor, hiThre, meThre }) => {
       return;
     }
 
-    setLast50Data(data.map((row) => row[columnName]).slice(-50));
+    const parsedData = data.map((row) => {
+      const parsedValue = parseFloat(row[columnName]);
+      return Number.isNaN(parsedValue) ? 0 : parsedValue;
+    });
+
+    setLast50Data(parsedData.slice(-50));
   }, [data, columnName]);
 
   useEffect(() => {
     if (!currentData) {
       return;
     }
-    const curretValue = currentData[columnName];
+
+    const currentValue = parseFloat(currentData[columnName]);
+    const validCurrentValue = Number.isNaN(currentValue) ? 0 : currentValue;
 
     setLast50Data((prev) => {
-      return [...prev.slice(1), curretValue];
+      return [...prev.slice(1), validCurrentValue];
     });
-    setValue(curretValue);
 
-    if (curretValue > hiThre) {
+    setValue(validCurrentValue);
+
+    if (validCurrentValue > hiThre) {
       setChipValue({
         bgColor: theme.palette.error.light,
         textColor: theme.palette.error.dark,
         borderColor: theme.palette.error.main,
         level: "high",
       });
-    } else if (curretValue > meThre) {
+    } else if (validCurrentValue > meThre) {
       setChipValue({
         bgColor: theme.palette.warning.light,
         textColor: theme.palette.warning.dark,

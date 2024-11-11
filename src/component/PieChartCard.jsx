@@ -100,7 +100,7 @@ const PieChartCard = ({ nameChart, columnName, ignoreValue = [], top = 5 }) => {
       setDataChart(finalDataChart);
       return updatedDataRaw;
     });
-  }, [currentData, columnName, ignoreValue]);
+  }, [currentData, columnName, ignoreValue, top]);
 
   return (
     <Card variant="outlined" sx={{ height: "100%", flexGrow: 1 }}>
@@ -128,8 +128,8 @@ const PieChartCard = ({ nameChart, columnName, ignoreValue = [], top = 5 }) => {
             <PieCenterLabel primaryText={total} secondaryText="Total" />
           </PieChart>
         </Box>
-        {dataChart.map((item) => (
-          <Stack sx={{ gap: 1, flexGrow: 1 }}>
+        {dataChart.map((item, index) => (
+          <Stack sx={{ gap: 1, flexGrow: 1 }} key={index}>
             <Stack direction="row" sx={{ pt: 1 }} className="center-horizon">
               <Typography variant="body2" sx={{ fontWeight: "550" }}>
                 {item.label}
