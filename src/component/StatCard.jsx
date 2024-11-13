@@ -87,7 +87,7 @@ const StatCard = ({ columnName, chartColor, hiThre, meThre }) => {
         >
           <Stack sx={{ justifyContent: "space-between" }}>
             <Stack direction="row" className="center-horizon">
-              <Typography variant="h2">{value}</Typography>
+              <Typography variant="h2">{formatNumber(value)}</Typography>
               <Chip
                 sx={{
                   color: chipValue.textColor,
@@ -103,7 +103,7 @@ const StatCard = ({ columnName, chartColor, hiThre, meThre }) => {
               variant="subtitle2"
               sx={{ paddingTop: "4px", color: "text.secondary" }}
             >
-              Last 50 Pakages
+              Last 50 Packets
             </Typography>
           </Stack>
           <Box sx={{ width: "100%", height: 100 }}>
@@ -146,4 +146,8 @@ const AreaGradient = ({ color, id }) => {
       </linearGradient>
     </defs>
   );
+};
+
+const formatNumber = (number) => {
+  return number.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
